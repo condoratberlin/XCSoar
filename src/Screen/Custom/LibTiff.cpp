@@ -33,10 +33,10 @@ Copyright_License {
 #ifdef USE_GEOTIFF
 #include "Geo/Quadrilateral.hpp"
 
-#include <geotiff.h>
-#include <geo_normalize.h>
-#include <geovalues.h>
-#include <xtiffio.h>
+#include <libgeotiff/geotiff.h>
+#include <libgeotiff/geo_normalize.h>
+#include <libgeotiff/geovalues.h>
+#include <libgeotiff/xtiffio.h>
 #endif
 
 static TIFF *
