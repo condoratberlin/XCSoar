@@ -25,7 +25,8 @@ Copyright_License {
 #include "LXN.hpp"
 #include "OS/ByteOrder.hpp"
 
-#include <stdint.h>
+#include <cstdint>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -252,23 +253,34 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
 
     case LXN::SECURITY_7000:
       data += sizeof(*packet.security_7000);
-      if (data > end ||
-          packet.security_7000->x40 != 0x40)
+      if (data > end)
         return false;
 
-      fprintf(file, "G3");
-      for (auto ch : packet.security_7000->line1)
-        fprintf(file, "%02X", ch);
+      if (packet.security_7000->x40 == 0x12) {
+        fprintf(file, "G3");
+        for (unsigned i = 0; i < 20; ++i)
+          fprintf(file, "%02X", packet.security_7000->line1[i]);
 
-      fprintf(file, "\r\nG");
-      for (auto ch : packet.security_7000->line2)
-        fprintf(file, "%02X", ch);
+        fprintf(file, "\r\n");
+      }
+      else if (packet.security_7000->x40 == 0x40) {
+        fprintf(file, "G3");
+        for (auto ch : packet.security_7000->line1)
+          fprintf(file, "%02X", ch);
 
-      fprintf(file, "\r\nG");
-      for (auto ch : packet.security_7000->line3)
-        fprintf(file, "%02X", ch);
+        fprintf(file, "\r\nG");
+        for (auto ch : packet.security_7000->line2)
+          fprintf(file, "%02X", ch);
 
-      fprintf(file, "\r\n");
+        fprintf(file, "\r\nG");
+        for (auto ch : packet.security_7000->line3)
+          fprintf(file, "%02X", ch);
+
+        fprintf(file, "\r\n");
+      }
+      else
+        fprintf(file, "GSECURITY_NOT_CONVERTED\r\n");
+
       break;
 
     case LXN::COMPETITION_CLASS:
@@ -284,6 +296,7 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
         fprintf(file,
                 "HFFXA%03d\r\n"
                 "HFPLTPILOT:%s\r\n"
+                "HFCM2CREW2:%s\r\n"
                 "HFGTYGLIDERTYPE:%s\r\n"
                 "HFGIDGLIDERID:%s\r\n"
                 "HFDTM%03dGPSDATUM:%s\r\n"
@@ -292,6 +305,7 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
                 "HFGPSGPS:%s\r\n",
                 context.flight_info.fix_accuracy,
                 context.flight_info.pilot,
+                context.flight_info.copilot,
                 context.flight_info.glider,
                 context.flight_info.registration,
                 context.flight_info.gps_date,
@@ -395,6 +409,8 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
       if (data > end ||
           !ValidString(packet.flight_info->pilot,
                        sizeof(packet.flight_info->pilot)) ||
+          !ValidString(packet.flight_info->copilot,
+                       sizeof(packet.flight_info->copilot)) ||
           !ValidString(packet.flight_info->glider,
                        sizeof(packet.flight_info->glider)) ||
           !ValidString(packet.flight_info->registration,
@@ -411,6 +427,7 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
         fprintf(file,
                 "HFFXA%03d\r\n"
                 "HFPLTPILOT:%s\r\n"
+                "HFCM2CREW2:%s\r\n"
                 "HFGTYGLIDERTYPE:%s\r\n"
                 "HFGIDGLIDERID:%s\r\n"
                 "HFDTM%03dGPSDATUM:%s\r\n"
@@ -419,6 +436,7 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
                 "HFGPSGPS:%s\r\n",
                 packet.flight_info->fix_accuracy,
                 packet.flight_info->pilot,
+                packet.flight_info->copilot,
                 packet.flight_info->glider,
                 packet.flight_info->registration,
                 packet.flight_info->gps_date,

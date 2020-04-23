@@ -35,8 +35,7 @@
 #include "Compiler.h"
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 /**
  * An array allocated on the heap with a length determined at runtime.
@@ -46,11 +45,11 @@ class AllocatedArray {
 	typedef WritableBuffer<T> Buffer;
 
 public:
-	typedef typename Buffer::size_type size_type;
-	typedef typename Buffer::reference reference;
-	typedef typename Buffer::const_reference const_reference;
-	typedef typename Buffer::iterator iterator;
-	typedef typename Buffer::const_iterator const_iterator;
+	using size_type = typename Buffer::size_type;
+	using reference = typename Buffer::reference;
+	using const_reference = typename Buffer::const_reference;
+	using iterator = typename Buffer::iterator;
+	using const_iterator = typename Buffer::const_iterator;
 
 protected:
 	Buffer buffer{nullptr};
